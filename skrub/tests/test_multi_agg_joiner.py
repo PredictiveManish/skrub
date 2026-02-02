@@ -3,20 +3,16 @@ import pytest
 
 from skrub import _dataframe as sbd
 from skrub._multi_agg_joiner import MultiAggJoiner
-from skrub.conftest import _POLARS_INSTALLED, skip_polars_installed_without_pyarrow
+from skrub.conftest import _POLARS_INSTALLED
 
 
 @pytest.fixture
-def main_table(df_module):
-    df = df_module.make_dataframe(
+def main_table():
+    df = pd.DataFrame(
         {
             "userId": [1, 1, 1, 2, 2, 2],
             "movieId": [1, 3, 6, 318, 6, 1704],
-            # Note that the ratings for movie 6 are 4.0 and 3.0, so that the
-            # mean is 3.5 and the type of the column is float
-            # This is because the nullable types config converts with `convert_dtypes`
-            # and would convert these values to int otherwise
-            "rating": [4.0, 4.0, 4.0, 3.0, 3.0, 4.0],
+            "rating": [4.0, 4.0, 4.0, 3.0, 2.0, 4.0],
             "genre": ["drama", "drama", "comedy", "sf", "comedy", "sf"],
         }
     )
@@ -44,12 +40,10 @@ def test_simple_fit_transform(df_module, main_table, use_X_placeholder):
         {
             "userId": [1, 1, 1, 2, 2, 2],
             "movieId": [1, 3, 6, 318, 6, 1704],
-            "rating": [4.0, 4.0, 4.0, 3.0, 3.0, 4.0],
+            "rating": [4.0, 4.0, 4.0, 3.0, 2.0, 4.0],
             "genre": ["drama", "drama", "comedy", "sf", "comedy", "sf"],
             "genre_mode_user": ["drama", "drama", "drama", "sf", "sf", "sf"],
-            # Note that the ratings for movie 6 are 4.0 and 3.0, so that the
-            # mean is 3.5 and the type of the column is float
-            "rating_mean_movie": [4.0, 4.0, 3.5, 3.0, 3.5, 4.0],
+            "rating_mean_movie": [4.0, 4.0, 3.0, 3.0, 3.0, 4.0],
         }
     )
     df_module.assert_frame_equal(
@@ -142,7 +136,6 @@ def test_wrong_main_table(df_module, main_table):
         multi_agg_joiner.fit_transform([1])
 
 
-@skip_polars_installed_without_pyarrow
 @pytest.mark.skipif(not _POLARS_INSTALLED, reason="Polars not available.")
 def test_check_wrong_aux_table_type(main_table, df_module):
     """

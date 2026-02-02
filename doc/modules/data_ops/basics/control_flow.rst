@@ -42,7 +42,7 @@ see a result for that value:
 <GetAttr 'columns'>
 Result:
 ―――――――
-Index(['item', 'price', 'qty'], dtype=...)
+Index(['item', 'price', 'qty'], dtype='object')
 
 The "result" we see is an *example* result that the computation produces for the
 data we provided. But we want to fit our pipeline and apply it to different
